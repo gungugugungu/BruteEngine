@@ -5,20 +5,7 @@ import data.scripts.settings as settings
 from pytmx import load_pygame
 import numpy as np
 import math
-
-""""
-    ----------------------------------------------------------------
-    ----------------------------------------------------------------
-    ----------------------------------------------------------------
-    made by Gungu
-    Notes:
-
-    If you steal, I'll actually be quite sad, cause I worked a lot on this thing. 
-    Around 50 hours already. :|
-    ----------------------------------------------------------------
-    ----------------------------------------------------------------
-    ----------------------------------------------------------------
-"""
+import pygame_shaders
 
 screen = pygame.surface.Surface((69, 69))
 clock = pygame.time.Clock()
@@ -33,11 +20,8 @@ debugMenuEnabled = False
 
 dt = 0
 
-import math
-import pygame
-
-import math
-import pygame
+Shader = pygame_shaders.Shader
+clear = pygame_shaders.clear
 
 def angleBetween(vector1, vector2):
     dot_product = vector1.dot(vector2)
