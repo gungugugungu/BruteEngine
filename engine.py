@@ -8,13 +8,16 @@ import math
 import pygame_shaders
 import pymunk
 from pymunk.vec2d import Vec2d
+import pymunk.pygame_util
 
+pygame.init()
 screen = pygame.surface.Surface((69, 69))
 clock = pygame.time.Clock()
 space = pymunk.Space(True)
 space.threads = 4
-square = pygame.image.load('data/scripts/shapes/square.png')
-circle = pygame.image.load('data/scripts/shapes/circle.png')
+space.gravity = (0, 981)
+square = pygame.image.load('data/scripts/shapes/square.png').convert_alpha()
+circle = pygame.image.load('data/scripts/shapes/circle.png').convert_alpha()
 
 cCheckRes = 4
 iterations = 10
@@ -67,14 +70,18 @@ def update():
     physics_objects.clear()
     collision_objects.clear()
     settings.screenshake = settings.screenshake.move_towards(Vector2(0, 0), 1)
+    space.step(dt)
     if debugMenuEnabled:
         pygame.draw.rect(screen, (0, 0, 0), (0,0,256,(len(debugProperties)+1)*16))
         screen.blit(RenderText('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
         for i, d in enumerate(debugProperties):
             screen.blit(RenderText(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
+        draw_options = pymunk.pygame_util.DrawOptions(screen)
+        space.debug_draw(draw_options)
 
 def colorImg(image, color, newColor):
-    paxalaray = pygame.PixelArray(image)
+    newImg = image.copy()
+    paxalaray = pygame.PixelArray(newImg)
     paxalaray.replace(color, newColor)
     return paxalaray.surface
 
@@ -186,7 +193,7 @@ class Tilemap:
         return colobs
 
 class Object:
-    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, layer='base'):
+    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, friction=1.0, layer='base'):
         self.image = image
         self.pos = pos
         self.rot = rot
@@ -197,16 +204,18 @@ class Object:
         self.body.position = pos
         self.shape = pymunk.Poly.create_box(self.body, size=scale)
         self.shape.sensor = isTrigger
+        self.shape.friction = friction
         self.shape.collision_type = 1  # Assign a unique collision type (integer) for this object
         space.add(self.body, self.shape)  # Add the body and shape to the pymunk space
 
     def update(self):
         # Update the position of the object based on the pymunk body's position
         self.pos = Vec2d(self.body.position.x, self.body.position.y)
+        draw_object(self.image, self.body.position, self.body.angle, self.scale)
         # The rotation and rendering code can remain the same
 
 class PhysicsObject:
-    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, kinematic=False, mass=1, drag=0.005, hasGravity=True, gravity=0.1, friction=0.7, layer='base'):
+    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, kinematic=False, mass=1, drag=0.005, hasGravity=True, gravity=0.1, friction=1.0, layer='base'):
         self.image = image
         self.pos = pos
         self.rot = rot
@@ -227,7 +236,7 @@ class PhysicsObject:
             body_type = pymunk.Body.KINEMATIC
         else:
             body_type = pymunk.Body.DYNAMIC
-        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, scale.x, scale.y), body_type=body_type)
+        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, (scale.x, scale.y)), body_type=body_type)
         self.body.position = pos
         self.shape = pymunk.Poly.create_box(self.body, size=scale)
         self.shape.sensor = isTrigger
@@ -246,7 +255,18 @@ class PhysicsObject:
 
         # Update the position of the object based on the pymunk body's position
         self.pos = Vec2d(self.body.position.x, self.body.position.y)
+        draw_object(self.image.convert_alpha(), self.body.position, self.body.angle, self.scale)
         # The rotation and rendering code can remain the same
+
+def draw_object(image, pos, rot, scale):
+    # Scale the image
+    scaled_image = pygame.transform.scale(image, (int(scale.x), int(scale.y)))
+    # Rotate the image
+    rotated_image = pygame.transform.rotate(scaled_image, -(rot*57.2958))
+    # Get the position of the top-left corner of the image
+    x, y = pos.x -rotated_image.get_width() / 2, pos.y -rotated_image.get_height() / 2
+    # Draw the image on the screen
+    screen.blit(rotated_image, (x, y))
 
 class Particle:
     def __init__(self, pos:Vector2, vel:Vector2, color:tuple, radius:int, drag:float, hasGravity=True, gravity:float=0.5):
