@@ -266,7 +266,7 @@ def draw_object(image, pos, rot, scale):
     # Get the position of the top-left corner of the image
     x, y = pos.x -rotated_image.get_width() / 2, pos.y -rotated_image.get_height() / 2
     # Draw the image on the screen
-    screen.blit(rotated_image, (x, y))
+    screen.blit(rotated_image, (x+settings.cam.x+settings.screenshake.x, y+settings.cam.y+settings.screenshake.y))
 
 class Particle:
     def __init__(self, pos:Vector2, vel:Vector2, color:tuple, radius:int, drag:float, hasGravity=True, gravity:float=0.5):
