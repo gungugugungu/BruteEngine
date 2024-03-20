@@ -14,6 +14,8 @@ from pygame._sdl2.video import Window, Texture, Image, Renderer
 renderer: Renderer
 window: Window
 
+_version = "1.4.1"
+
 def init(size, title):
     global window
     global renderer
@@ -21,6 +23,8 @@ def init(size, title):
     window = Window(title, size)
 
     renderer = Renderer(window)
+
+    print(f"Initalized Brute Engine (version {_version}, pygame version {pygame.version.ver})")
 
 pygame.init()
 clock = pygame.time.Clock()
