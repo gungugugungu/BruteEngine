@@ -13,30 +13,47 @@ from pygame._sdl2.video import Window, Texture, Image, Renderer
 
 renderer: Renderer
 window: Window
+_window_surf:pygame.Surface
+fps_cap = 60
+clock:pygame.time.Clock
+space:pymunk.Space
+cam:Vector2
+screenshake:Vector2
+
+Surface = pygame.Surface
+Clock = pygame.Clock
 
 _version = "1.4.1"
 
-def init(size, title):
+def init(size, title, max_fps=60):
+    pygame.init()
     global window
     global renderer
-    global _pygame_surf
+    global _window_surf
+    global fps_cap
+    global clock
+    global cam
+    global screenshake
+    global space
     window = Window(title, size)
 
     renderer = Renderer(window)
+    _window_surf = window.get_surface()
+
+    fps_cap = max_fps
+    clock = Clock()
+
+    space = pymunk.Space(True)
+    space.threads = 4
+    space.gravity = (0, 981)
+
+    screenshake = Vector2(0, 0)
+    cam = Vector2(0, 0)
 
     print(f"Initalized Brute Engine (version {_version}, pygame version {pygame.version.ver})")
 
-pygame.init()
-clock = pygame.time.Clock()
-space = pymunk.Space(True)
-space.threads = 4
-space.gravity = (0, 981)
-
 cCheckRes = 4
 iterations = 10
-
-screenshake = Vector2(0, 0)
-cam = Vector2(0, 0)
 
 debugProperties = []
 debugMenuEnabled = False
@@ -71,9 +88,15 @@ def blit_surface(surface:pygame.Surface, position, size=(-1, -1)):
     dest = pygame.Rect(px, py, w, h)
     renderer.blit(Texture.from_surface(renderer, surface), dest)
 
+def fill(color):
+    renderer.draw_color = color
+    renderer.clear()
+
 def load_texture(image_path):
-    # TODO: .convert_alpha()
-    return Texture.from_surface(renderer, pygame.image.load(image_path))
+    return Texture.from_surface(renderer, pygame.image.load(image_path).convert_alpha())
+
+def load_surface(image_path):
+    return pygame.image.load(image_path).convert_alpha()
 
 ### SOME OTHER FUNCTIONS I DON'T KNOW A GENERAL NAME FOR THEM ###
 def angleBetween(vector1, vector2):
@@ -119,6 +142,8 @@ def move_towards(pos: float, targetPos: float, speed: float):
 
 def update():
     global screenshake
+    global debugMenuEnabled
+    global dt
     physics_objects.clear()
     collision_objects.clear()
     screenshake = screenshake.move_towards(Vector2(0, 0), 1)
@@ -126,20 +151,32 @@ def update():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_PAUSE:
+                debugMenuEnabled = not debugMenuEnabled
+    if debugMenuEnabled:
+        draw_rect((0, 0, 0), (0,0,256,(len(debugProperties)+1)*16))
+        blit_surface(RenderText('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
+        for i, d in enumerate(debugProperties):
+            blit_surface(RenderText(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
     renderer.present()
-    #if debugMenuEnabled:
-    #    pygame.draw.rect(screen, (0, 0, 0), (0,0,256,(len(debugProperties)+1)*16))
-    #    screen.blit(RenderText('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
-    #    for i, d in enumerate(debugProperties):
-    #        screen.blit(RenderText(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
-    #    draw_options = pymunk.pygame_util.DrawOptions(screen)
-    #    space.debug_draw(draw_options)
+    dt = clock.tick(fps_cap)/1000
 
 def colorImg(image, color, newColor):
     newImg = image.copy()
     paxalaray = pygame.PixelArray(newImg)
     paxalaray.replace(color, newColor)
     return paxalaray.surface
+
+### INPUT ###
+def mouse_down():
+    return pygame.mouse.get_pressed()
+
+def keyboard_down():
+    return pygame.key.get_pressed()
+
+def get_mouse_position():
+    return pygame.mouse.get_pos()
 
 class VariableStorer:
     pass
