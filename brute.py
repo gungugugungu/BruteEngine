@@ -4,7 +4,6 @@ from pygame.math import Vector2
 from pytmx import load_pygame
 import numpy as np
 import math
-import pygame_shaders
 import pymunk
 from pymunk.vec2d import Vec2d
 import sys
@@ -59,9 +58,6 @@ debugProperties = []
 debugMenuEnabled = False
 
 dt = 0
-
-Shader = pygame_shaders.Shader
-clear = pygame_shaders.clear
 
 ### RENDERING ###
 def draw_rect(color, rect:tuple[int, int, int, int]):
