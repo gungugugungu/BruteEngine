@@ -178,9 +178,6 @@ def keyboard_down():
 def get_mouse_position():
     return pygame.mouse.get_pos()
 
-class VariableStorer:
-    pass
-
 class Timer:
     def __init__(self, timer_int_ticks: int):
         self.time = timer_int_ticks
