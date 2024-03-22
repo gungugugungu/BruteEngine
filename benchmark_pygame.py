@@ -5,7 +5,7 @@ pygame.init()
 screen = pygame.display.set_mode((512, 512))
 pygame.display.set_caption("Pygame Testing")
 
-textures = [pygame.image.load("data/textures/red.png").convert_alpha(), pygame.image.load("data/textures/blue.png").convert_alpha(), pygame.image.load("data/textures/green.png").convert_alpha(), pygame.image.load("data/textures/yellow.png").convert_alpha()]
+textures = [pygame.image.load("shapes/red.png").convert_alpha(), pygame.image.load("shapes/blue.png").convert_alpha(), pygame.image.load("shapes/green.png").convert_alpha(), pygame.image.load("shapes/yellow.png").convert_alpha()]
 objects = []
 
 clock = pygame.Clock()

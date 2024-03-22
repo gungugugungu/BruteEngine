@@ -3,7 +3,7 @@ import brute as brute
 
 brute.init((512, 512), "Brute Testing")
 
-textures = [brute.load_texture("data/textures/red.png"), brute.load_texture("data/textures/blue.png"), brute.load_texture("data/textures/green.png"), brute.load_texture("data/textures/yellow.png")]
+textures = [brute.load_texture("shapes/red.png"), brute.load_texture("shapes/blue.png"), brute.load_texture("shapes/green.png"), brute.load_texture("shapes/yellow.png")]
 objects = []
 
 brute.debugProperties.append("Objects: 0")
