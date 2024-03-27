@@ -211,82 +211,62 @@ class Animator:
             else:
                 self.image = self.frames[self.frames.index(self.image)+1]
 
-#class Tilemap:
-#    def __init__(self, file_path:str, scaleBy=1, max_bake_size=Vector2(10000, 10000)):
-#        self.path = file_path
-#        self.file = load_pygame(file_path)
-#        self.scale_by = scaleBy
-#        self.baked = False
-#        self.bakeSurface = pygame.Surface(max_bake_size.xy).convert_alpha()
-#        self.bakeSurface.set_colorkey((255, 0, 255))
-#    def bake(self, tileLayers:list, objectLayers:list):
-#        self.baked = True
-#        self.bakeSurface.fill((255, 0, 255))
-#        for tileLayerName in tileLayers:
-#            for x, y, surf in np.array(list(self.file.get_layer_by_name(tileLayerName).tiles())):
-#                self.bakeSurface.blit(pygame.transform.scale(surf, (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), ((x*surf.get_width())*self.scale_by, (y*surf.get_height())*self.scale_by))
-#        for objectLayerName in objectLayers:
-#            for obj in np.array(self.file.get_layer_by_name(objectLayerName)):
-#                self.bakeSurface.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.pygame.Surface.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), (obj.x*self.scale_by, obj.y*self.scale_by))
-#    def bake_delete(self):
-#        self.baked = False
-#        self.bakeSurface.fill((255, 0, 255))
-#    def bake_draw(self):
-#        if self.baked:
-#            screen.blit(self.bakeSurface, cam+screenshake)
-#        else:
-#            print('Not baked, cannot render')
-#    def reload(self):
-#        self.file = load_pygame(self.path)
-#    def get_obj_by_name(self, name, layer):
-#        for obj in self.file.get_layer_by_name(layer):
-#            if obj.name == name:
-#                return obj
-#    def get_obj_by_type(self, type, layer):
-#        for obj in self.file.get_layer_by_name(layer):
-#            if obj.type == type:
-#                return obj
-#    def draw_all_objects(self, layer):
-#        rects = []
-#        for obj in self.file.get_layer_by_name(layer):
-#            rects.append(screen.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
-#        return rects
-#    def draw_objects_to_different_screen(self, surface, layer):
-#        rects = []
-#        for obj in self.file.get_layer_by_name(layer):
-#            rects.append(surface.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
-#        return rects
-#    def get_all_objects(self, layer):
-#        retun = []
-#        for obj in self.file.get_layer_by_name(layer):
-#            retun.append(obj)
-#        return retun
-#    def draw(self, layer, offset=Vector2(0, 0)):
-#        colobs = []
-#        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
-#            rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), ((x*surf.get_width()+cam.x+offset.x+screenshake.x)*self.scale_by, (y*surf.get_height()+cam.y+offset.y+screenshake.y)*self.scale_by))
-#            colobs.append(rect)
-#        return colobs
-#    def draw_to_different_surface(self, layer, surface, offset=Vector2(0, 0)):
-#        colobs = []
-#        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
-#            rect = surface.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), (x*surf.get_width()+cam.x+offset.x+screenshake.x*self.scale_by, y*surf.get_height()+cam.y+offset.y+screenshake.y*self.scale_by))
-#            colobs.append(rect)
-#        return colobs
-#    def draw_all_layers(self,offset=Vector2(0, 0)):
-#        colobs = []
-#        for layer in self.file.visible_tile_layers.tiles():
-#            for x, y, surf in self.file.get_layer_by_name(layer.name).tiles():
-#                rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width(), surf.get_height())), (x*surf.get_width()+cam.x+offset.x+screenshake.x, y*surf.get_height()+cam.y+offset.y+screenshake.y))
-#                colobs.append(rect)
-#        return colobs
-#    def get_layer_colobjs(self, layer, offset=Vector2(0, 0)):
-#        colobs = []
-#        for x, y, surf in (self.file.get_layer_by_name(layer).tiles()):
-#            rect = pygame.Rect(x*32+offset.x, y*32+offset.y, surf.get_width(), surf.get_height())
-#            colobs.append(rect)
-#        return colobs
-#
+class Tilemap:
+    def __init__(self, file_path:str, scaleBy=1, max_bake_size=Vector2(10000, 10000)):
+        self.path = file_path
+        self.file = load_pygame(file_path)
+        self.scale_by = scaleBy
+    def reload(self):
+        self.file = load_pygame(self.path)
+    def get_obj_by_name(self, name, layer):
+        for obj in self.file.get_layer_by_name(layer):
+            if obj.name == name:
+                return obj
+    def get_obj_by_type(self, type, layer):
+        for obj in self.file.get_layer_by_name(layer):
+            if obj.type == type:
+                return obj
+    def draw_all_objects(self, layer):
+        rects = []
+        for obj in self.file.get_layer_by_name(layer):
+            rects.append(screen.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
+        return rects
+    def draw_objects_to_different_screen(self, surface, layer):
+        rects = []
+        for obj in self.file.get_layer_by_name(layer):
+            rects.append(surface.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
+        return rects
+    def get_all_objects(self, layer):
+        retun = []
+        for obj in self.file.get_layer_by_name(layer):
+            retun.append(obj)
+        return retun
+    def draw(self, layer, offset=Vector2(0, 0)):
+        colobs = []
+        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
+            rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), ((x*surf.get_width()+cam.x+offset.x+screenshake.x)*self.scale_by, (y*surf.get_height()+cam.y+offset.y+screenshake.y)*self.scale_by))
+            colobs.append(rect)
+        return colobs
+    def draw_to_different_surface(self, layer, surface, offset=Vector2(0, 0)):
+        colobs = []
+        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
+            rect = surface.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), (x*surf.get_width()+cam.x+offset.x+screenshake.x*self.scale_by, y*surf.get_height()+cam.y+offset.y+screenshake.y*self.scale_by))
+            colobs.append(rect)
+        return colobs
+    def draw_all_layers(self,offset=Vector2(0, 0)):
+        colobs = []
+        for layer in self.file.visible_tile_layers.tiles():
+            for x, y, surf in self.file.get_layer_by_name(layer.name).tiles():
+                rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width(), surf.get_height())), (x*surf.get_width()+cam.x+offset.x+screenshake.x, y*surf.get_height()+cam.y+offset.y+screenshake.y))
+                colobs.append(rect)
+        return colobs
+    def get_layer_colobjs(self, layer, offset=Vector2(0, 0)):
+        colobs = []
+        for x, y, surf in (self.file.get_layer_by_name(layer).tiles()):
+            rect = pygame.Rect(x*32+offset.x, y*32+offset.y, surf.get_width(), surf.get_height())
+            colobs.append(rect)
+        return colobs
+
 #class Object:
 #    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, friction=1.0, layer='base'):
 #        self.image = image
