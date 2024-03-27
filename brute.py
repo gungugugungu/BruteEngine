@@ -9,6 +9,7 @@ from pymunk.vec2d import Vec2d
 import sys
 import pymunk.pygame_util
 from pygame._sdl2.video import Window, Texture, Image, Renderer
+import pygame._sdl2.video as _video
 
 renderer: Renderer
 window: Window
@@ -25,7 +26,6 @@ Clock = pygame.Clock
 _version = "1.4.1"
 
 def init(size, title, max_fps=60):
-    pygame.init()
     global window
     global renderer
     global _window_surf
@@ -34,8 +34,8 @@ def init(size, title, max_fps=60):
     global cam
     global screenshake
     global space
+    pygame.init()
     window = Window(title, size)
-
     renderer = Renderer(window)
     _window_surf = window.get_surface()
 
@@ -56,6 +56,7 @@ iterations = 10
 
 debugProperties = []
 debugMenuEnabled = False
+time = 1
 
 dt = 0
 
@@ -93,6 +94,12 @@ def load_texture(image_path):
 
 def load_surface(image_path):
     return pygame.image.load(image_path).convert_alpha()
+
+def blit_rotate_texture(texture:Texture, pos:tuple[int, int], angle:int, size=(-1, -1)):
+    if size == (-1, -1):
+        size = (texture.width, texture.height)
+    dist = (pos[0], pos[1], size[0], size[1])
+    texture.draw(dstrect=dist, angle=angle)
 
 ### SOME OTHER FUNCTIONS I DON'T KNOW A GENERAL NAME FOR THEM ###
 def angleBetween(vector1, vector2):
@@ -140,6 +147,7 @@ def update():
     global screenshake
     global debugMenuEnabled
     global dt
+    global time
     physics_objects.clear()
     collision_objects.clear()
     screenshake = screenshake.move_towards(Vector2(0, 0), 1)
@@ -157,6 +165,7 @@ def update():
             blit_surface(RenderText(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
     renderer.present()
     dt = clock.tick(fps_cap)/1000
+    time += 1
 
 def colorImg(image, color, newColor):
     newImg = image.copy()
