@@ -212,10 +212,21 @@ class Animator:
                 self.image = self.frames[self.frames.index(self.image)+1]
 
 class Tilemap:
-    def __init__(self, file_path:str, scaleBy=1, max_bake_size=Vector2(10000, 10000)):
+    def __init__(self, file_path:str, layers:list[str], object_layers:list[str], scaleBy=1):
         self.path = file_path
         self.file = load_pygame(file_path)
         self.scale_by = scaleBy
+        self.layer_dictionaries = []
+        self.obj_layer_dictionaries = []
+        for layer_name in layers:
+            self.layer_dictionaries.append({"name":layer_name, "tiles":[]})
+            for x, y, surf in self.file.get_layer_by_name(layer_name).tiles:
+                self.layer_dictionaries[layer_name]["tiles"].append({"x": x, "y": y, "texture": Texture.from_surface(renderer, surf)})
+        for obj_layer_name in object_layers:
+            self.layer_dictionaries.append({"name":obj_layer_name, "objects":[]})
+            for obj in self.file.get_layer_by_name(obj_layer_name):
+                self.layer_dictionaries[obj_layer_name]["objects"].append(obj)
+
     def reload(self):
         self.file = load_pygame(self.path)
     def get_obj_by_name(self, name, layer):
