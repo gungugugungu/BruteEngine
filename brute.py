@@ -133,8 +133,8 @@ def max(num, max):
 def min_max(num, minn, maxn):
     return min(max(num, maxn), minn)
 
-def RenderText(text="Secret text", font='', textcolor=(0, 0, 0), fontsize=16, aa=True):
-    return pygame.font.Font(f'data/{font}.ttf', fontsize).render(text, aa, textcolor)
+def render_text(text="Secret text", font='', textcolor=(0, 0, 0), fontsize=16, aa=True):
+    return Texture.from_surface(renderer, pygame.font.Font(f'data/{font}.ttf', fontsize).render(text, aa, textcolor))
 
 def shake_screen(power:int):
     global screenshake
@@ -160,9 +160,9 @@ def update():
                 debugMenuEnabled = not debugMenuEnabled
     if debugMenuEnabled:
         draw_rect((0, 0, 0), (0,0,256,(len(debugProperties)+1)*16))
-        blit_surface(RenderText('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
+        blit(render_text('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
         for i, d in enumerate(debugProperties):
-            blit_surface(RenderText(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
+            blit(render_text(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
     renderer.present()
     dt = clock.tick(fps_cap)/1000
     time += 1
@@ -196,21 +196,21 @@ class Timer:
             self.time -= 1 * dt
         self.done = self.time <= 0
 
-#class Animator:
-#    def __init__(self, timeBetweenFrames:int,  frames:list):
-#        self.timeBetweenFrames = timeBetweenFrames
-#        self.frames = frames
-#        self.timer = Timer(timeBetweenFrames)
-#        self.image = self.frames[0]
-#    def update(self):
-#        self.timer.update()
-#        if self.timer.done:
-#            self.timer.time = self.timeBetweenFrames
-#            if self.frames.index(self.image) >= len(self.frames)-1:
-#                self.image = self.frames[0]
-#            else:
-#                self.image = self.frames[self.frames.index(self.image)+1]
-#
+class Animator:
+    def __init__(self, time_between_frames:int, frames:list[Texture]):
+        self.time_between_frames = time_between_frames
+        self.frames = frames
+        self.timer = Timer(time_between_frames)
+        self.image = self.frames[0]
+    def update(self):
+        self.timer.update()
+        if self.timer.done:
+            self.timer.time = self.time_between_frames
+            if self.frames.index(self.image) >= len(self.frames)-1:
+                self.image = self.frames[0]
+            else:
+                self.image = self.frames[self.frames.index(self.image)+1]
+
 #class Tilemap:
 #    def __init__(self, file_path:str, scaleBy=1, max_bake_size=Vector2(10000, 10000)):
 #        self.path = file_path
