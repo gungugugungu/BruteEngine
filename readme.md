@@ -8,7 +8,6 @@ It has features for
 - Animations
 - Particles
 - Grass simulation (WIP)
-- Vine simulation (WIP)
 
 # How to use
 Start by importing the script **"brute.py"**, and add a **data** folder for storing stuff.

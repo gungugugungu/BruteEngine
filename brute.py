@@ -22,6 +22,7 @@ screenshake:Vector2
 
 Surface = pygame.Surface
 Clock = pygame.Clock
+Rect = pygame.Rect
 
 _version = "1.4.1"
 
@@ -229,53 +230,30 @@ class Tilemap:
 
     def reload(self):
         self.file = load_pygame(self.path)
-    def get_obj_by_name(self, name, layer):
-        for obj in self.file.get_layer_by_name(layer):
-            if obj.name == name:
-                return obj
-    def get_obj_by_type(self, type, layer):
-        for obj in self.file.get_layer_by_name(layer):
-            if obj.type == type:
-                return obj
-    def draw_all_objects(self, layer):
-        rects = []
-        for obj in self.file.get_layer_by_name(layer):
-            rects.append(screen.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
-        return rects
-    def draw_objects_to_different_screen(self, surface, layer):
-        rects = []
-        for obj in self.file.get_layer_by_name(layer):
-            rects.append(surface.blit(pygame.transform.rotate(pygame.transform.scale(obj.image.convert_alpha(), (obj.width*self.scale_by, obj.height*self.scale_by)), -obj.rotation), ((obj.x+cam.x+screenshake.x)*self.scale_by, (obj.y+cam.y+screenshake.y)*self.scale_by)))
-        return rects
-    def get_all_objects(self, layer):
-        retun = []
-        for obj in self.file.get_layer_by_name(layer):
-            retun.append(obj)
-        return retun
-    def draw(self, layer, offset=Vector2(0, 0)):
+    def get_obj_by_name(self, name, layer_name):
+        for layer in self.obj_layer_dictionaries:
+            if layer["name"] == layer_name:
+                for obj in layer["objects"]:
+                    if obj.name == name:
+                        return obj
+    def get_obj_by_type(self, type, layer_name):
+        for layer in self.obj_layer_dictionaries:
+            if layer["name"] == layer_name:
+                for obj in layer["objects"]:
+                    if obj.type == type:
+                        return obj
+    def draw_all_objects(self, layer_name):
+        for layer in self.obj_layer_dictionaries:
+            if layer["name"] == layer_name:
+                for obj in layer["objects"]:
+                    blit_rotate_texture(Texture.from_surface(renderer, obj.image.convert_alpha()), ((obj.x-cam.x+screenshake.x)*self.scale_by, (obj.y-cam.y+screenshake.y)*self.scale_by), obj.rotation, (obj.width*self.scale_by, obj.height*self.scale_by))
+    def draw(self, layer_name):
         colobs = []
-        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
-            rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), ((x*surf.get_width()+cam.x+offset.x+screenshake.x)*self.scale_by, (y*surf.get_height()+cam.y+offset.y+screenshake.y)*self.scale_by))
-            colobs.append(rect)
-        return colobs
-    def draw_to_different_surface(self, layer, surface, offset=Vector2(0, 0)):
-        colobs = []
-        for x, y, surf in self.file.get_layer_by_name(layer).tiles():
-            rect = surface.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width()*self.scale_by, surf.get_height()*self.scale_by)), (x*surf.get_width()+cam.x+offset.x+screenshake.x*self.scale_by, y*surf.get_height()+cam.y+offset.y+screenshake.y*self.scale_by))
-            colobs.append(rect)
-        return colobs
-    def draw_all_layers(self,offset=Vector2(0, 0)):
-        colobs = []
-        for layer in self.file.visible_tile_layers.tiles():
-            for x, y, surf in self.file.get_layer_by_name(layer.name).tiles():
-                rect = screen.blit(pygame.transform.scale(surf.convert_alpha(), (surf.get_width(), surf.get_height())), (x*surf.get_width()+cam.x+offset.x+screenshake.x, y*surf.get_height()+cam.y+offset.y+screenshake.y))
-                colobs.append(rect)
-        return colobs
-    def get_layer_colobjs(self, layer, offset=Vector2(0, 0)):
-        colobs = []
-        for x, y, surf in (self.file.get_layer_by_name(layer).tiles()):
-            rect = pygame.Rect(x*32+offset.x, y*32+offset.y, surf.get_width(), surf.get_height())
-            colobs.append(rect)
+        for layer in self.layer_dictionaries:
+            if layer["name"] == layer_name:
+                for obj in layer["tiles"]:
+                    blit(Texture.from_surface(renderer, obj["texture"]), ((obj["x"]-cam.x+screenshake.x)*self.scale_by, (obj["y"]-cam.y+screenshake.y)*self.scale_by), (obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
+                    colobs.append(Rect(obj["x"]*self.scale_by, obj["y"]*self.scale_by, obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
         return colobs
 
 #class Object:
