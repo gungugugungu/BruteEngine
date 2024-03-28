@@ -26,7 +26,7 @@ Rect = pygame.Rect
 
 _version = "1.4.1"
 
-def init(size, title, max_fps=60):
+def init(size, title, max_fps=60, fullscreen=False):
     global window
     global renderer
     global _window_surf
@@ -39,6 +39,8 @@ def init(size, title, max_fps=60):
     window = Window(title, size)
     renderer = Renderer(window)
     _window_surf = window.get_surface()
+    if fullscreen:
+        window.set_fullscreen()
 
     fps_cap = max_fps
     clock = Clock()
@@ -221,8 +223,8 @@ class Tilemap:
         self.obj_layer_dictionaries = []
         for layer_name in layers:
             self.layer_dictionaries.append({"name":layer_name, "tiles":[]})
-            for x, y, surf in self.file.get_layer_by_name(layer_name).tiles:
-                self.layer_dictionaries[layer_name]["tiles"].append({"x": x, "y": y, "texture": Texture.from_surface(renderer, surf)})
+            for x, y, surf in self.file.get_layer_by_name(layer_name).tiles():
+                    self.layer_dictionaries[len(self.layer_dictionaries)-1]["tiles"].append({"x": x, "y": y, "texture": Texture.from_surface(renderer, surf.convert_alpha())})
         for obj_layer_name in object_layers:
             self.layer_dictionaries.append({"name":obj_layer_name, "objects":[]})
             for obj in self.file.get_layer_by_name(obj_layer_name):
@@ -252,8 +254,8 @@ class Tilemap:
         for layer in self.layer_dictionaries:
             if layer["name"] == layer_name:
                 for obj in layer["tiles"]:
-                    blit(Texture.from_surface(renderer, obj["texture"]), ((obj["x"]-cam.x+screenshake.x)*self.scale_by, (obj["y"]-cam.y+screenshake.y)*self.scale_by), (obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
-                    colobs.append(Rect(obj["x"]*self.scale_by, obj["y"]*self.scale_by, obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
+                    blit(obj["texture"], ((obj["x"]*obj["texture"].width-cam.x+screenshake.x)*self.scale_by, (obj["y"]*obj["texture"].height-cam.y+screenshake.y)*self.scale_by), (obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
+                    colobs.append(Rect(obj["x"]*obj["texture"].width*self.scale_by, obj["y"]*obj["texture"].height*self.scale_by, obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
         return colobs
 
 #class Object:
