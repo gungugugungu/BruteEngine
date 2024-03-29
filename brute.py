@@ -20,12 +20,14 @@ space:pymunk.Space
 cam:Vector2
 screenshake:Vector2
 transparent_img:Texture
+_circle_surf:pygame.Surface
+circle_texture:Texture
 
 Surface = pygame.Surface
 Clock = pygame.Clock
 Rect = pygame.Rect
 
-_version = "1.4.1"
+_version = "1.7"
 
 def init(size, title, max_fps=60, fullscreen=False):
     global window
@@ -37,6 +39,8 @@ def init(size, title, max_fps=60, fullscreen=False):
     global screenshake
     global space
     global transparent_img
+    global _circle_surf
+    global circle_texture
     pygame.init()
     window = Window(title, size)
     renderer = Renderer(window)
@@ -55,6 +59,8 @@ def init(size, title, max_fps=60, fullscreen=False):
     cam = Vector2(0, 0)
 
     transparent_img = load_texture("shapes/transparent.png")
+    _circle_surf = pygame.image.load("shapes/circle.png").convert_alpha()
+    circle_texture = Texture.from_surface(renderer, _circle_surf)
 
     print(f"Initalized Brute Engine (version {_version}, pygame version {pygame.version.ver})")
 
@@ -299,67 +305,57 @@ class PhysicsObject:
         self.pos = Vec2d(self.body.position.x, self.body.position.y)
         blit_rotate_texture(self.image, (self.body.position.x, self.body.position.y), -self.body.angle*57.2958, self.scale)
 
-#class Particle:
-#    def __init__(self, pos:Vector2, vel:Vector2, color:tuple, radius:int, drag:float, hasGravity=True, gravity:float=0.5):
-#        self.pos = pos
-#        self.vel = vel
-#        self.radius = radius
-#        self.color = color
-#        self.drag = drag
-#        self.hasGravity = hasGravity
-#        self.gravity = gravity
-#    def update(self):
-#        if self.vel.x > 0: # -----Drag-----
-#            self.vel.x -= self.drag
-#        if self.vel.x < 0:
-#            self.vel.x += self.drag
-#        if self.vel.y > 0 and self.hasGravity == False: #
-#            self.vel.y -= self.drag
-#        if self.vel.y < 0 and self.hasGravity == False:
-#            self.vel.y += self.drag
-#        if abs(self.vel.x) < self.drag:
-#            self.vel.x = 0
-#        if abs(self.vel.y) < self.drag and self.hasGravity == False:
-#            self.vel.y = 0
-#        if self.hasGravity:
-#            self.vel.y += self.gravity
-#        self.pos += self.vel
-#        pygame.draw.circle(screen, self.color, self.pos+screenshake, self.radius)
-#
-#class ParticleSystem:
-#    def __init__(self, amount:int, minVel: Vector2, maxVel: Vector2, drag:float, pos:Vector2, radius:int, color:tuple, aliveSeconds:int, hasGravity=True, gravity=0.5):
-#        self.particles = np.array([])
-#        self.amount = amount
-#        self.shouldDie = False
-#        self.time = aliveSeconds
-#        random.seed()
-#        for ps in range(amount):
-#            self.particles = np.append(self.particles, Particle(pos, Vector2(random.randrange(minVel.x, maxVel.x), random.randrange(minVel.y, maxVel.y)), color, radius, drag, hasGravity, gravity))
-#    def update(self):
-#        if self.shouldDie == False:
-#            for particle in self.particles:
-#                particle.update()
-#            self.time -= 1*dt
-#        if self.time <= 0:
-#            for particle in self.particles:
-#                if particle.radius > 0:
-#                    particle.radius -= 0.5
-#                else:
-#                    self.shouldDie = True
-#
-#class UIButton:
-#    def __init__(self, img, pos:Vector2):
-#        self.img = img
-#        self.pos = pos
-#        self.enabled = True
-#    def update(self):
-#        if self.enabled == True:
-#            self.rect = screen.blit(self.img, self.pos.xy)
-#            if self.rect.collidepoint(pygame.mouse.get_pos()):
-#                if pygame.BUTTON_LEFT in pygame.mouse.get_pressed():
-#                    self.onClick()
-#    def onClick(self):
-#        pass # Replaced in class
+class ParticleSystem:
+    def __init__(self, amount:int, minVel: tuple[float, float], maxVel: tuple[float, float], drag:float, pos:tuple[int, int], radius:int, color:tuple, aliveSeconds:int, gravity=0):
+        self.particles = []
+        self.amount = amount
+        self.shouldDie = False
+        self.time = aliveSeconds
+        self.gravity = gravity
+        self.drag = drag
+        random.seed()
+        for ps in range(amount):
+            self.particles.append({"x": pos[0], "y": pos[1], "vel_x": random.uniform(minVel[0], maxVel[0]), "vel_y": random.uniform(minVel[1], maxVel[1]), "radius": radius, "color": color, "texture": Texture.from_surface(renderer, colorImg(_circle_surf, (255, 255, 255), color))})
+    def update(self):
+        if self.shouldDie == False:
+            for particle in self.particles:
+                if particle["vel_x"] > 1:
+                    particle["vel_x"] -= self.drag*dt
+                elif particle["vel_x"] < 1:
+                    particle["vel_x"] += self.drag*dt
+                else:
+                    particle["vel_x"] = 0
+                if particle["vel_y"] > 1:
+                    particle["vel_y"] -= self.drag*dt
+                elif particle["vel_y"] < 1:
+                    particle["vel_y"] += self.drag*dt
+                else:
+                    particle["vel_y"] = 0
+                particle["vel_y"] += self.gravity*dt
+                particle["x"] += particle["vel_x"]
+                particle["y"] += particle["vel_y"]
+                blit(particle["texture"], (particle["x"], particle["y"]), (particle["radius"]*2, particle["radius"]*2))
+            self.time -= 1*dt
+        if self.time <= 0:
+            for particle in self.particles:
+                if particle["radius"] > 0:
+                    particle["radius"] -= 0.5
+                else:
+                    self.shouldDie = True
+
+class UIButton:
+    def __init__(self, img:Texture, pos:tuple[int, int]):
+        self.img = img
+        self.pos = pos
+        self.enabled = True
+    def update(self):
+        if self.enabled == True:
+            self.rect = blit(self.img, self.pos)
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                if pygame.BUTTON_LEFT in pygame.mouse.get_pressed():
+                    self.onClick()
+    def onClick(self):
+        pass # Replaced in class
 
 physics_objects = []
 collision_objects = []

@@ -11,6 +11,7 @@ angle = 0
 map = brute.Tilemap("data/devmap.tmx", ["col", "nocol"], [])
 map_col_objects = []
 boxes = []
+particles = []
 for r in map.draw("col"):
     map_col_objects.append(brute.PhysicsObject(brute.transparent_img, brute.Vec2d(r.x, r.y), 0, brute.Vec2d(r.w, r.h), kinematic=True))
 brute.debug_properties.append("")
@@ -28,11 +29,7 @@ while True:
     if mouse_pressed[0]:
         boxes.append(brute.PhysicsObject(random.choice([texture_yellow, texture_green, texture_red]), brute.Vec2d(mx, my), 0, brute.Vec2d(32, 32)))
     elif mouse_pressed[1]:
-        boxes.append(brute.PhysicsObject(texture_blue, brute.Vec2d(mx, my), 0, brute.Vec2d(32, 32)))
-        _temp_shape = brute.pymunk.Circle(boxes[len(boxes)-1].body, 16)
-        brute.space.add(_temp_shape)
-        brute.space.remove(boxes[len(boxes)-1].shape)
-        boxes[len(boxes)-1].shape = _temp_shape
+        particles.append(brute.ParticleSystem(10, (-5, -5), (5, 5), 0.1, (mx, my), 4, (random.randrange(100, 200), random.randrange(100, 200), random.randrange(100, 200)), 2, 40))
     elif mouse_pressed[2]:
         remove_list = [o for o in boxes if (o.body.position.x+o.scale.x >= mx >= o.body.position.x) and (o.body.position.y+o.scale.y >= my >= o.body.position.y)]
         for ro in remove_list:
@@ -44,6 +41,10 @@ while True:
     map.draw("col")
     [o for o in map_col_objects if o.update()]
     [o for o in boxes if o.update()]
+    [p for p in particles if p.update()]
+    for p in particles:
+        if p.shouldDie:
+            particles.remove(p)
     brute.debug_properties[0] = f"Objects: {len(boxes)}"
 
     brute.update()
