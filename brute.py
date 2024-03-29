@@ -27,7 +27,7 @@ Surface = pygame.Surface
 Clock = pygame.Clock
 Rect = pygame.Rect
 
-_version = "1.7"
+_version = "1.7.5"
 
 def init(size, title, max_fps=60, fullscreen=False):
     global window
@@ -87,6 +87,7 @@ def blit(texture:Texture, position, size=(-1, -1)):
         w, h = size
     dest = pygame.Rect(px, py, w, h)
     renderer.blit(texture, dest)
+    return dest
 
 def blit_surface(surface:pygame.Surface, position, size=(-1, -1)):
     renderer.draw_color = (255, 255, 255)
@@ -97,6 +98,7 @@ def blit_surface(surface:pygame.Surface, position, size=(-1, -1)):
         w, h = size
     dest = pygame.Rect(px, py, w, h)
     renderer.blit(Texture.from_surface(renderer, surface), dest)
+    return dest
 
 def fill(color):
     renderer.draw_color = color
@@ -355,7 +357,7 @@ class UIButton:
                 if pygame.BUTTON_LEFT in pygame.mouse.get_pressed():
                     self.onClick()
     def onClick(self):
-        pass # Replaced in class
+        pass  # Replaced in class
 
 physics_objects = []
 collision_objects = []
