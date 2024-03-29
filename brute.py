@@ -19,6 +19,7 @@ clock:pygame.time.Clock
 space:pymunk.Space
 cam:Vector2
 screenshake:Vector2
+transparent_img:Texture
 
 Surface = pygame.Surface
 Clock = pygame.Clock
@@ -35,6 +36,7 @@ def init(size, title, max_fps=60, fullscreen=False):
     global cam
     global screenshake
     global space
+    global transparent_img
     pygame.init()
     window = Window(title, size)
     renderer = Renderer(window)
@@ -52,13 +54,15 @@ def init(size, title, max_fps=60, fullscreen=False):
     screenshake = Vector2(0, 0)
     cam = Vector2(0, 0)
 
+    transparent_img = load_texture("shapes/transparent.png")
+
     print(f"Initalized Brute Engine (version {_version}, pygame version {pygame.version.ver})")
 
 cCheckRes = 4
 iterations = 10
 
-debugProperties = []
-debugMenuEnabled = False
+debug_properties = []
+debug_menu_enabled = False
 time = 1
 
 dt = 0
@@ -148,7 +152,7 @@ def move_towards(pos: float, targetPos: float, speed: float):
 
 def update():
     global screenshake
-    global debugMenuEnabled
+    global debug_menu_enabled
     global dt
     global time
     physics_objects.clear()
@@ -160,11 +164,11 @@ def update():
             quit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_PAUSE:
-                debugMenuEnabled = not debugMenuEnabled
-    if debugMenuEnabled:
-        draw_rect((0, 0, 0), (0,0,256,(len(debugProperties)+1)*16))
+                debug_menu_enabled = not debug_menu_enabled
+    if debug_menu_enabled:
+        draw_rect((0, 0, 0), (0,0,256,(len(debug_properties)+1)*16))
         blit(render_text('fps: '+str(int(clock.get_fps())), 'font', (0, 255, 0), 16), (0, 0))
-        for i, d in enumerate(debugProperties):
+        for i, d in enumerate(debug_properties):
             blit(render_text(d, 'font', (0, 255, 0), 16), (0, (i+1)*16))
     renderer.present()
     dt = clock.tick(fps_cap)/1000
@@ -258,82 +262,43 @@ class Tilemap:
                     colobs.append(Rect(obj["x"]*obj["texture"].width*self.scale_by, obj["y"]*obj["texture"].height*self.scale_by, obj["texture"].width*self.scale_by, obj["texture"].height*self.scale_by))
         return colobs
 
-#class Object:
-#    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, friction=1.0, layer='base'):
-#        self.image = image
-#        self.pos = pos
-#        self.rot = rot
-#        self.scale = scale
-#        self.isTrigger = isTrigger
-#        # Initialize pymunk body for the object (kinematic body)
-#        self.body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
-#        self.body.position = pos
-#        self.shape = pymunk.Poly.create_box(self.body, size=scale)
-#        self.shape.sensor = isTrigger
-#        self.shape.friction = friction
-#        self.shape.collision_type = 1  # Assign a unique collision type (integer) for this object
-#        space.add(self.body, self.shape)  # Add the body and shape to the pymunk space
-#
-#    def update(self):
-#        # Update the position of the object based on the pymunk body's position
-#        self.pos = Vec2d(self.body.position.x, self.body.position.y)
-#        draw_object(self.image, self.body.position, self.body.angle, self.scale)
-#        # The rotation and rendering code can remain the same
-#
-#class PhysicsObject:
-#    def __init__(self, image, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, kinematic=False, mass=1, drag=0.005, hasGravity=True, gravity=0.1, friction=1.0, layer='base'):
-#        self.image = image
-#        self.pos = pos
-#        self.rot = rot
-#        self.scale = scale
-#        self.isTrigger = isTrigger
-#        self.kinematic = kinematic
-#        self.drag = drag
-#        self.mass = mass
-#        self.canMoveUp = True
-#        self.canMoveDown = True
-#        self.canMoveLeft = True
-#        self.canMoveRight = True
-#        self.hasGravity = hasGravity
-#        self.gravity = gravity
-#        self.friction = friction
-#        # Initialize pymunk body for the object (dynamic body if not kinematic)
-#        if kinematic:
-#            body_type = pymunk.Body.KINEMATIC
-#        else:
-#            body_type = pymunk.Body.DYNAMIC
-#        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, (scale.x, scale.y)), body_type=body_type)
-#        self.body.position = pos
-#        self.shape = pymunk.Poly.create_box(self.body, size=scale)
-#        self.shape.sensor = isTrigger
-#        self.shape.friction = friction
-#        self.shape.elasticity = 0.0
-#        self.shape.collision_type = 2  # Assign a unique collision type (integer) for this object
-#        space.add(self.body, self.shape)  # Add the body and shape to the pymunk space
-#
-#    def update(self):
-#        if self.hasGravity:
-#            self.body.apply_force_at_local_point((0, -self.mass * self.gravity), (0, 0))
-#        self.body.velocity *= (1 - self.drag)  # Apply drag to velocity
-#
-#        # The rest of the code dealing with collision detection and response can be removed
-#        # Pymunk handles collisions and responses internally based on the shapes and bodies added to the space
-#
-#        # Update the position of the object based on the pymunk body's position
-#        self.pos = Vec2d(self.body.position.x, self.body.position.y)
-#        draw_object(self.image.convert_alpha(), self.body.position, self.body.angle, self.scale)
-#        # The rotation and rendering code can remain the same
-#
-#def draw_object(image, pos, rot, scale):
-#    # Scale the image
-#    scaled_image = pygame.transform.scale(image, (int(scale.x), int(scale.y)))
-#    # Rotate the image
-#    rotated_image = pygame.transform.rotate(scaled_image, -(rot*57.2958))
-#    # Get the position of the top-left corner of the image
-#    x, y = pos.x -rotated_image.get_width() / 2, pos.y -rotated_image.get_height() / 2
-#    # Draw the image on the screen
-#    screen.blit(rotated_image, (x+cam.x+screenshake.x, y+cam.y+screenshake.y))
-#
+class PhysicsObject:
+    def __init__(self, image:Texture, pos: Vec2d, rot: int, scale: Vec2d, isTrigger=False, kinematic=False, mass=1, drag=0.005, hasGravity=True, gravity=0.1, friction=1.0, layer='base'):
+        self.image = image
+        self.pos = pos
+        self.rot = rot
+        self.scale = scale
+        self.isTrigger = isTrigger
+        self.kinematic = kinematic
+        self.drag = drag
+        self.mass = mass
+        self.canMoveUp = True
+        self.canMoveDown = True
+        self.canMoveLeft = True
+        self.canMoveRight = True
+        self.hasGravity = hasGravity
+        self.gravity = gravity
+        self.friction = friction
+        if kinematic:
+            body_type = pymunk.Body.KINEMATIC
+        else:
+            body_type = pymunk.Body.DYNAMIC
+        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, (scale.x, scale.y)), body_type=body_type)
+        self.body.position = pos
+        self.shape = pymunk.Poly.create_box(self.body, size=scale)
+        self.shape.sensor = isTrigger
+        self.shape.friction = friction
+        self.shape.elasticity = 0.0
+        self.shape.collision_type = 2
+        space.add(self.body, self.shape)
+
+    def update(self):
+        if self.hasGravity:
+            self.body.apply_force_at_local_point((0, -self.mass * self.gravity), (0, 0))
+        self.body.velocity *= (1 - self.drag)
+        self.pos = Vec2d(self.body.position.x, self.body.position.y)
+        blit_rotate_texture(self.image, (self.body.position.x, self.body.position.y), -self.body.angle*57.2958, self.scale)
+
 #class Particle:
 #    def __init__(self, pos:Vector2, vel:Vector2, color:tuple, radius:int, drag:float, hasGravity=True, gravity:float=0.5):
 #        self.pos = pos
