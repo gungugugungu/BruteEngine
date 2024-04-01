@@ -57,8 +57,8 @@ def init(size, title, max_fps=60, fullscreen=False):
     screenshake = Vector2(0, 0)
     cam = Vector2(0, 0)
 
-    transparent_img = load_texture("shapes/transparent.png")
-    _circle_surf = pygame.image.load("shapes/circle.png").convert_alpha()
+    transparent_img = load_texture("data/scripts/shapes/transparent.png")
+    _circle_surf = pygame.image.load("data/scripts/shapes/circle.png").convert_alpha()
     circle_texture = Texture.from_surface(renderer, _circle_surf)
 
     print(f"Initalized Brute Engine (version {_version}, pygame version {pygame.version.ver})")
