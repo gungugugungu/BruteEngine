@@ -2,14 +2,12 @@ import random
 import pygame
 from pygame.math import Vector2
 from pytmx import load_pygame
-import numpy as np
 import math
 import pymunk
 from pymunk.vec2d import Vec2d
 import sys
 import pymunk.pygame_util
 from pygame._sdl2.video import Window, Texture, Image, Renderer
-import pygame._sdl2.video as _video
 
 renderer: Renderer
 window: Window
@@ -26,6 +24,7 @@ circle_texture:Texture
 Surface = pygame.Surface
 Clock = pygame.Clock
 Rect = pygame.Rect
+Sound = pygame.mixer.Sound
 
 _version = "1.7.5"
 
@@ -117,16 +116,14 @@ def blit_rotate_texture(texture:Texture, pos:tuple[int, int], angle:int, size=(-
     texture.draw(dstrect=dist, angle=angle)
 
 ### SOME OTHER FUNCTIONS I DON'T KNOW A GENERAL NAME FOR THEM ###
-def angleBetween(vector1, vector2):
-    dot_product = vector1.dot(vector2)
-
-    magnitude1 = vector1.length()
-    magnitude2 = vector2.length()
-
+def angle_between(vector1:tuple[int, int], vector2:tuple[int, int]):
+    _vec1 = Vector2(vector1)
+    _vec2 = Vector2(vector2)
+    dot_product = _vec1.dot(vector2)
+    magnitude1 = _vec1.length()
+    magnitude2 = _vec2.length()
     angle_radians = math.acos(dot_product / (magnitude1 * magnitude2))
-
     angle_degrees = math.degrees(angle_radians)
-
     return angle_degrees
 
 def quit():
@@ -163,8 +160,6 @@ def update():
     global debug_menu_enabled
     global dt
     global time
-    physics_objects.clear()
-    collision_objects.clear()
     screenshake = screenshake.move_towards(Vector2(0, 0), 1)
     space.step(dt)
     for event in pygame.event.get():
@@ -358,6 +353,3 @@ class UIButton:
                     self.onClick()
     def onClick(self):
         pass  # Replaced in class
-
-physics_objects = []
-collision_objects = []
